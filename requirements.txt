@@ -1,0 +1,7 @@
+base58==2.1.0; python_version >= "3.5"
+gql==3.0.0a5
+graphql-core==3.1.5; python_version >= "3.6" and python_version < "4"
+idna==3.2; python_version >= "3.6"
+multidict==5.1.0; python_version >= "3.6"
+yarl==1.6.3; python_version >= "3.6"
+aiohttp==3.7.4.post0
