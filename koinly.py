@@ -121,7 +121,6 @@ with open('koinly-mina-tx.csv', 'w', encoding='UTF8') as f:
 
         # After the first tx we may have burnt 1 MINA if the address was not in the Genesis ledger
         if i == 1 and burn_fee == True:
-            # Was the account in the Genesis ledger otherwise the first transaction has a 1 MINA fee burn
             writer.writerow([
                 result["transactions"][0]["dateTime"], -1, "MINA", "",
                 result["transactions"][0]["hash"],
