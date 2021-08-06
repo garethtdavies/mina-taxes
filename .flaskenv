@@ -1,0 +1,2 @@
+FLASK_APP=taxapp.py
+FLASK_DEBUG=1
