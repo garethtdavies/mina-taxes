@@ -106,6 +106,10 @@ class Koinly():
             else:  # This is a deposit transaction
                 amount = tx["amount"]
 
+                # Might be a delegation or memo transaction but this is not of interest if amount is 0
+                if amount == 0:
+                    continue
+
             # Is this a pool payout, if so label as REWARD
             # See labels here https://help.koinly.io/en/articles/3663453-what-are-labels
             if "Payout" in self.memo_parser(tx["memo"]):
