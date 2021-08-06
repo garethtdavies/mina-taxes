@@ -45,11 +45,19 @@
                 </div>
               </div>
 
-              <div class="col-md-5">
+              <div class="col-12">
                 <label for="country" class="form-label">Export Format</label>
                 {{ form.export(class="form-select", id="export") }}
                 <div class="invalid-feedback">
                   Please select a valid export format.
+                </div>
+              </div>
+
+              <div class="col-12">
+                <label for="country" class="form-label">Export Type</label>
+                {{ form.export_type(class="form-select", id="export_type") }}
+                <div class="invalid-feedback">
+                  Please select a valid export type.
                 </div>
               </div>
 
