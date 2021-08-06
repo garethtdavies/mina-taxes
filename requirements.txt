@@ -1,7 +1,29 @@
-base58==2.1.0; python_version >= "3.5"
-gql==3.0.0a5
-graphql-core==3.1.5; python_version >= "3.6" and python_version < "4"
-idna==3.2; python_version >= "3.6"
-multidict==5.1.0; python_version >= "3.6"
-yarl==1.6.3; python_version >= "3.6"
 aiohttp==3.7.4.post0
+async-timeout==3.0.1
+attrs==21.2.0
+base58==2.1.0
+certifi==2021.5.30
+chardet==4.0.0
+charset-normalizer==2.0.4
+click==8.0.1
+docopt==0.6.2
+Flask==2.0.1
+Flask-WTF==0.15.1
+gql==3.0.0a5
+graphql-core==3.1.5
+idna==3.2
+itsdangerous==2.0.1
+Jinja2==3.0.1
+MarkupSafe==2.0.1
+multidict==5.1.0
+pipreqs==0.4.10
+python-dateutil==2.8.2
+python-dotenv==0.19.0
+requests==2.26.0
+six==1.16.0
+typing-extensions==3.10.0.0
+urllib3==1.26.6
+Werkzeug==2.0.1
+WTForms==2.3.3
+yarg==0.1.9
+yarl==1.6.3
