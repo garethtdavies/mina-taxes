@@ -1,11 +1,14 @@
 import io
 import csv
 from dateutil.parser import parse
-from app.exporters.graphql import GraphQL
+from app.graphql import GraphQL
 import app.helpers as helpers
 
 
 class Koinly():
+    """
+    Class for exporting data in Koinly format
+    """
     def __init__(self):
         self.si = io.StringIO()
         self.writer = csv.writer(self.si)
@@ -20,8 +23,8 @@ class Koinly():
 
         tx_date_time = parse(tx_date)
         if tx_date_time < started_trading:
-            net_worth = self.constants[
-                "pre_trading_value"] * helpers.TaxTools().mina_format(amount)
+            net_worth = self.constants["pre_trading_value"] * helpers.TaxTools(
+            ).mina_format(amount)
         else:
             net_worth = ""
 

@@ -4,11 +4,15 @@ from wtforms.validators import DataRequired, Length
 
 
 class TaxForm(FlaskForm):
+    """
+    Class to define the front-end tax form
+    """
     address = StringField('address',
                           validators=[DataRequired(),
                                       Length(min=55, max=55)])
     export = SelectField('export',
-                         choices=[('', 'Choose...'), ('koinly', 'Koinly'), ('accointing', 'Accointing - COMING SOON')],
+                         choices=[('', 'Choose...'), ('koinly', 'Koinly'),
+                                  ('accointing', 'Accointing - COMING SOON')],
                          validators=[DataRequired()])
     export_type = SelectField(
         'export_type',
