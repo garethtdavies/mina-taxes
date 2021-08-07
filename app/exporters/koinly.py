@@ -1,8 +1,8 @@
 import io
 import csv
-import base58
 from dateutil.parser import parse
 from app.exporters.graphql import GraphQL
+import app.helpers as helpers
 
 
 class Koinly():
@@ -10,29 +10,18 @@ class Koinly():
         self.si = io.StringIO()
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
-
-    # Parse the memo
-    def memo_parser(self, memo):
-        """Decode the memo output"""
-        decoded = base58.b58decode(memo)
-        decoded = decoded[3:-4]
-        output = decoded.decode("utf-8", "ignore")
-        output = output.strip()
-        return output.replace("\x00", "")
-
-    # Format the amounts
-    def mina_format(self, s):
-        return s / 1000000000
+        self.constants = helpers.Config().constants()
 
     # Determine if transaction was before trading started
     def calculate_net_worth(self, tx_date, amount=None):
 
         # Consider all values before trading started on June 1st as $0.25
-        started_trading = parse("2021-06-01T00:00:00Z")
+        started_trading = parse(self.constants["genesis_date"])
 
         tx_date_time = parse(tx_date)
         if tx_date_time < started_trading:
-            net_worth = 0.25 * self.mina_format(amount)
+            net_worth = self.constants[
+                "pre_trading_value"] * helpers.TaxTools().mina_format(amount)
         else:
             net_worth = ""
 
@@ -79,16 +68,18 @@ class Koinly():
 
                 # Is this a pool payout, if so label as REWARD
                 # See labels here https://help.koinly.io/en/articles/3663453-what-are-labels
-                if "Payout" in self.memo_parser(tx["memo"]):
+                if self.constants["pool_payout_keyword"] in helpers.TaxTools(
+                ).memo_parser(tx["memo"]):
                     label = "reward"
                 else:
                     label = ""
 
                 self.writer.writerow([
                     tx["dateTime"],
-                    self.mina_format(amount), "MINA", label, tx["hash"],
+                    helpers.TaxTools().mina_format(amount), "MINA", label,
+                    tx["hash"],
                     self.calculate_net_worth(tx["dateTime"], amount), "USD",
-                    self.memo_parser(tx["memo"])
+                    helpers.TaxTools().memo_parser(tx["memo"])
                 ])
 
                 # After the first tx we may have burnt 1 MINA if the address was not in the Genesis ledger
@@ -113,10 +104,11 @@ class Koinly():
             if genesis_ledger["stake"]:
 
                 self.writer.writerow([
-                    "2021-03-17T00:00:00Z", genesis_ledger["stake"]["balance"],
-                    "MINA", "other income",
-                    "3NKeMoncuHab5ScarV5ViyF16cJPT4taWNSaTLS64Dp67wuXigPZ",
-                    genesis_ledger["stake"]["balance"] * 0.25, "USD",
+                    self.constants["genesis_date"],
+                    genesis_ledger["stake"]["balance"], "MINA", "other income",
+                    self.constants["genesis_state_hash"],
+                    genesis_ledger["stake"]["balance"] *
+                    self.constants["pre_trading_value"], "USD",
                     "Genesis Token Grant"
                 ])
 
