@@ -8,7 +8,7 @@ class TaxForm(FlaskForm):
                           validators=[DataRequired(),
                                       Length(min=55, max=55)])
     export = SelectField('export',
-                         choices=[('', 'Choose...'), ('koinly', 'Koinly')],
+                         choices=[('', 'Choose...'), ('koinly', 'Koinly'), ('accointing', 'Accointing - COMING SOON')],
                          validators=[DataRequired()])
     export_type = SelectField(
         'export_type',
