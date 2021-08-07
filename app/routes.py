@@ -12,12 +12,13 @@ def index():
     if form.validate_on_submit():
         address = form.address.data
         #export = form.export.data
+        export_type = form.export_type.data
 
         # TODO instantiate based on the export type
         exporter = Koinly()
-        output = make_response(exporter.download_export(address))
+        output = make_response(exporter.download_export(address, export_type))
         output.headers[
-            "Content-Disposition"] = f"attachment; filename={address}.csv"
+            "Content-Disposition"] = f"attachment; filename={address}-{export_type}.csv"
         output.headers["Content-type"] = "text/csv"
         return output
 
