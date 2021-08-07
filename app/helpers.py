@@ -2,6 +2,9 @@ import base58
 
 
 class Config():
+    """
+    A place to define the constants used throughout the application.
+    """
     def constants(self):
         return {
             'genesis_date': '2021-06-01T00:00:00Z',
@@ -15,6 +18,9 @@ class Config():
 
 
 class TaxTools():
+    """
+    A class for helper functions for all tax exporters.
+    """
 
     # Parse the memo
     def memo_parser(self, memo):
