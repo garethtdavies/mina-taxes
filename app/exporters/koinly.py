@@ -96,6 +96,7 @@ class Koinly():
 
                 i += 1
 
+        # Handle the genesis grants
         elif export_type == "genesis":
 
             self.writer.writerow(header)
@@ -113,6 +114,28 @@ class Koinly():
                     genesis_ledger["stake"]["balance"] *
                     self.constants["pre_trading_value"], "USD",
                     "Genesis Token Grant"
+                ])
+
+        # Handle the block production - this should be the coinbase receiver address if used
+        elif export_type == "production":
+
+            self.writer.writerow(header)
+
+            # Get all blocks produced by this key
+            blocks = self.graphql.get_blocks_produced(address)
+
+            for block in blocks["blocks"]:
+
+                # Include any tx fees and deduct any snark fees
+                amount = int(block["transactions"]["coinbase"]) + int(
+                    block["txFees"]) - int(block["snarkFees"])
+
+                self.writer.writerow([
+                    block["dateTime"],
+                    helpers.TaxTools().mina_format(amount), "MINA", "mining",
+                    block["stateHash"],
+                    self.calculate_net_worth(block["dateTime"], amount), "USD",
+                    block["blockHeight"]
                 ])
 
         return (self.si.getvalue())
