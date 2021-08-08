@@ -1,6 +1,5 @@
 import io
 import csv
-from dateutil.parser import parse
 from app.graphql import GraphQL
 import app.helpers as helpers
 
@@ -14,21 +13,7 @@ class Koinly():
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
-
-    # Determine if transaction was before trading started
-    def calculate_net_worth(self, tx_date, amount=None):
-
-        # Consider all values before trading started on June 1st as $0.25
-        started_trading = parse(self.constants["genesis_date"])
-
-        tx_date_time = parse(tx_date)
-        if tx_date_time < started_trading:
-            net_worth = self.constants["pre_trading_value"] * helpers.TaxTools(
-            ).mina_format(amount)
-        else:
-            net_worth = ""
-
-        return net_worth
+    
 
     def download_export(self, address, export_type):
 
@@ -81,7 +66,7 @@ class Koinly():
                     tx["dateTime"],
                     helpers.TaxTools().mina_format(amount), "MINA", label,
                     tx["hash"],
-                    self.calculate_net_worth(tx["dateTime"], amount), "USD",
+                    helpers.TaxTools().calculate_net_worth(tx["dateTime"], amount), "USD",
                     helpers.TaxTools().memo_parser(tx["memo"])
                 ])
 
@@ -90,7 +75,7 @@ class Koinly():
                     self.writer.writerow([
                         transactions["transactions"][0]["dateTime"], -1,
                         "MINA", "", transactions["transactions"][0]["hash"],
-                        self.calculate_net_worth(tx["dateTime"], 1000000000),
+                        helpers.TaxTools().calculate_net_worth(tx["dateTime"], 1000000000),
                         "USD", "Ledger Fee"
                     ])
 
@@ -134,7 +119,7 @@ class Koinly():
                     block["dateTime"],
                     helpers.TaxTools().mina_format(amount), "MINA", "mining",
                     block["stateHash"],
-                    self.calculate_net_worth(block["dateTime"], amount), "USD",
+                    helpers.TaxTools().calculate_net_worth(block["dateTime"], amount), "USD",
                     block["blockHeight"]
                 ])
 

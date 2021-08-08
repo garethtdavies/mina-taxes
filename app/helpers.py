@@ -1,4 +1,5 @@
 import base58
+from dateutil.parser import parse
 
 
 class Config():
@@ -21,8 +22,6 @@ class TaxTools():
     """
     A class for helper functions for all tax exporters.
     """
-
-    # Parse the memo
     def memo_parser(self, memo):
         """Decode the memo output"""
         decoded = base58.b58decode(memo)
@@ -31,6 +30,19 @@ class TaxTools():
         output = output.strip()
         return output.replace("\x00", "")
 
-    # Format the amounts
     def mina_format(self, s):
+        """Format nanomina to mina"""
         return s / 1000000000
+
+    def calculate_net_worth(self, tx_date, amount=None):
+        """Consider all values before trading started as a flat rate"""
+        started_trading = parse(Config().constants()["genesis_date"])
+
+        tx_date_time = parse(tx_date)
+        if tx_date_time < started_trading:
+            net_worth = Config().constants(
+            )["pre_trading_value"] * self.mina_format(amount)
+        else:
+            net_worth = ""
+
+        return net_worth
