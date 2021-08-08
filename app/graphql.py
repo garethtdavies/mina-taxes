@@ -58,3 +58,28 @@ class GraphQL():
                                              variable_values=params)
 
         return result_genesis
+
+    def get_blocks_produced(self, address):
+        """Determines fee transfers to an address, which would normally be the coinbase receiver"""
+
+        blocks = gql("""
+                  query allBlocks($account: String!) {
+                    blocks(query: {transactions: {coinbaseReceiverAccount: {publicKey: $account}}, canonical: true}, sortBy: DATETIME_ASC, limit: 100000) {
+                        dateTime
+                        stateHash
+                        blockHeight
+                        canonical
+                        txFees
+                        snarkFees
+                        transactions {
+                        coinbase
+                        }
+                    }
+                  }
+                  """)
+
+        params = {"account": address}
+
+        result_blocks = self.client.execute(blocks, variable_values=params)
+
+        return result_blocks

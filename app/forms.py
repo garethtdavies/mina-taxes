@@ -16,13 +16,12 @@ class TaxForm(FlaskForm):
                          validators=[DataRequired()])
     export_type = SelectField(
         'export_type',
-        choices=[
-            ('', 'Choose...'),
-            ('transactions', 'Transactions (includes staking pool payouts)'),
-            ('production',
-             'Block Production (only if running a block producer) - COMING SOON'
-             ), ('snarks', 'SNARK Work - COMING SOON'),
-            ('genesis', 'Genesis Grants')
-        ],
+        choices=[('', 'Choose...'),
+                 ('transactions',
+                  'Transactions (includes staking pool payouts)'),
+                 ('production',
+                  'Block Production (only if running a block producer - use coinbase receiver)'),
+                 ('snarks', 'SNARK Work - COMING SOON'),
+                 ('genesis', 'Genesis Grants')],
         validators=[DataRequired()])
     submit = SubmitField('Generate Export')
