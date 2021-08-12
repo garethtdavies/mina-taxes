@@ -1,4 +1,4 @@
-# MinaExplorer Tax Export Tool
+# MinaExplorer Exporter Tool
 
 A repository for exporting data from MinaExplorer for popular tax software. This is a tool to aid exporting in the format required for each software, it is **not** tax advice and you should manually review any export.
 
