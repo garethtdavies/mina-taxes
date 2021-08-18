@@ -21,7 +21,7 @@ class TaxForm(FlaskForm):
          ('transactions', 'Transactions (includes staking pool payouts)'),
          ('production',
           'Block Production (only if running a block producer - use coinbase receiver)'
-          ), ('snarks', 'SNARK Work - COMING SOON'),
+          ), ('snarks', 'SNARK Work'),
          ('genesis', 'Genesis Grants')],
         validators=[DataRequired()])
     submit = SubmitField('Generate Export')

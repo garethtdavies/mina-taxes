@@ -83,3 +83,25 @@ class GraphQL():
         result_blocks = self.client.execute(blocks, variable_values=params)
 
         return result_blocks
+
+    def get_snarks_sold(self, address):
+        """Determines fee transfers to an address, which would normally be the coinbase receiver"""
+
+        snarks = gql("""
+                  query allSnarks($account: String!) {
+                    snarks(limit: 100000, sortBy: DATETIME_ASC, query: {canonical: true, prover: $account}) {
+                    dateTime
+                    blockHeight
+                    block {
+                        stateHash
+                    }
+                    fee
+                    }
+                  }
+                  """)
+
+        params = {"account": address}
+
+        result_snarks = self.client.execute(snarks, variable_values=params)
+
+        return result_snarks

@@ -13,7 +13,6 @@ class Koinly():
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
-    
 
     def download_export(self, address, export_type):
 
@@ -66,7 +65,8 @@ class Koinly():
                     tx["dateTime"],
                     helpers.TaxTools().mina_format(amount), "MINA", label,
                     tx["hash"],
-                    helpers.TaxTools().calculate_net_worth(tx["dateTime"], amount), "USD",
+                    helpers.TaxTools().calculate_net_worth(
+                        tx["dateTime"], amount), "USD",
                     helpers.TaxTools().memo_parser(tx["memo"])
                 ])
 
@@ -75,8 +75,8 @@ class Koinly():
                     self.writer.writerow([
                         transactions["transactions"][0]["dateTime"], -1,
                         "MINA", "", transactions["transactions"][0]["hash"],
-                        helpers.TaxTools().calculate_net_worth(tx["dateTime"], 1000000000),
-                        "USD", "Ledger Fee"
+                        helpers.TaxTools().calculate_net_worth(
+                            tx["dateTime"], 1000000000), "USD", "Ledger Fee"
                     ])
 
                 i += 1
@@ -119,8 +119,27 @@ class Koinly():
                     block["dateTime"],
                     helpers.TaxTools().mina_format(amount), "MINA", "mining",
                     block["stateHash"],
-                    helpers.TaxTools().calculate_net_worth(block["dateTime"], amount), "USD",
-                    block["blockHeight"]
+                    helpers.TaxTools().calculate_net_worth(
+                        block["dateTime"], amount), "USD", block["blockHeight"]
+                ])
+
+        # Export SNARK work
+        elif export_type == "snarks":
+
+            self.writer.writerow(header)
+
+            # Get all snark work produced by this key
+            snarks = self.graphql.get_snarks_sold(address)
+
+            for snark in snarks["snarks"]:
+
+                self.writer.writerow([
+                    snark["dateTime"],
+                    helpers.TaxTools().mina_format(snark["fee"]), "MINA",
+                    "mining", snark["block"]["stateHash"],
+                    helpers.TaxTools().calculate_net_worth(
+                        snark["dateTime"],
+                        snark["fee"]), "USD", snark["blockHeight"]
                 ])
 
         return (self.si.getvalue())
