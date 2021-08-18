@@ -136,7 +136,7 @@ class Koinly():
                 self.writer.writerow([
                     snark["dateTime"],
                     helpers.TaxTools().mina_format(snark["fee"]), "MINA",
-                    "mining", snark["block"]["stateHash"],
+                    "mining", '',
                     helpers.TaxTools().calculate_net_worth(
                         snark["dateTime"],
                         snark["fee"]), "USD", snark["blockHeight"]

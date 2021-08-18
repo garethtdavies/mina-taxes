@@ -92,9 +92,6 @@ class GraphQL():
                     snarks(limit: 100000, sortBy: DATETIME_ASC, query: {canonical: true, prover: $account}) {
                     dateTime
                     blockHeight
-                    block {
-                        stateHash
-                    }
                     fee
                     }
                   }
