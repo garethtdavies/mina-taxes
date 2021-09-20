@@ -12,7 +12,7 @@ class TaxForm(FlaskForm):
                                       Length(min=55, max=55)])
     export = SelectField('export',
                          choices=[('', 'Choose...'), ('koinly', 'Koinly'),
-                                  ('accointing', 'Accointing - In Progress')],
+                                  ('accointing', 'Accointing')],
                          validators=[DataRequired()])
     export_type = SelectField(
         'export_type',

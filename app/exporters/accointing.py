@@ -145,11 +145,11 @@ class Accointing():
                     block["txFees"]) - int(block["snarkFees"])
 
                 self.writer.writerow([
-                    block["dateTime"],
-                    helpers.TaxTools().mina_format(amount), "MINA", "mining",
-                    block["stateHash"],
-                    helpers.TaxTools().calculate_net_worth(
-                        block["dateTime"], amount), "USD", block["blockHeight"]
+                    "deposit",
+                    parser.parse(
+                        block["dateTime"]).strftime("%m/%d/%Y %H:%M:%S"),
+                    helpers.TaxTools().mina_format(amount), "MINA", "", "", "",
+                    "", "mined", block["stateHash"]
                 ])
 
         # Export SNARK work
@@ -163,12 +163,11 @@ class Accointing():
             for snark in snarks["snarks"]:
 
                 self.writer.writerow([
-                    snark["dateTime"],
-                    helpers.TaxTools().mina_format(snark["fee"]), "MINA",
-                    "mining", '',
-                    helpers.TaxTools().calculate_net_worth(
-                        snark["dateTime"],
-                        snark["fee"]), "USD", snark["blockHeight"]
+                    "deposit",
+                    parser.parse(
+                        snark["dateTime"]).strftime("%m/%d/%Y %H:%M:%S"),
+                    helpers.TaxTools().mina_format(snark["fee"]), "MINA", "",
+                    "", "", "", "mined", snark["blockHeight"]
                 ])
 
         return (self.si.getvalue())
