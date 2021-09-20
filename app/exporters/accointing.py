@@ -123,12 +123,11 @@ class Accointing():
             if genesis_ledger["stake"]:
 
                 self.writer.writerow([
-                    self.constants["genesis_date"],
-                    genesis_ledger["stake"]["balance"], "MINA", "other income",
-                    self.constants["genesis_state_hash"],
-                    genesis_ledger["stake"]["balance"] *
-                    self.constants["pre_trading_value"], "USD",
-                    "Genesis Token Grant"
+                    "deposit",
+                    parser.parse(self.constants["genesis_date"]).strftime(
+                        "%m/%d/%Y %H:%M:%S"),
+                    genesis_ledger["stake"]["balance"], "MINA", "", "", "", "",
+                    "airdrop", self.constants["genesis_state_hash"]
                 ])
 
         # Handle the block production - this should be the coinbase receiver address if used
