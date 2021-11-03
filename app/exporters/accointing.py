@@ -15,7 +15,7 @@ class Accointing():
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
 
-    def download_export(self, address, export_type):
+    def download_export(self, address, export_type, start_date, end_date):
 
         # Specify the headers for the Accointing import
         header = [
@@ -28,7 +28,8 @@ class Accointing():
         if export_type == "transactions":
 
             # Get all the transaction data for this account
-            transactions = self.graphql.get_transactions(address)
+            transactions = self.graphql.get_transactions(
+                address, start_date, end_date)
 
             # Determine if the account is in the genesis ledger
             genesis_ledger = self.graphql.get_genesis_info(address)
@@ -136,7 +137,8 @@ class Accointing():
             self.writer.writerow(header)
 
             # Get all blocks produced by this key
-            blocks = self.graphql.get_blocks_produced(address)
+            blocks = self.graphql.get_blocks_produced(address, start_date,
+                                                      end_date)
 
             for block in blocks["blocks"]:
 
@@ -158,7 +160,8 @@ class Accointing():
             self.writer.writerow(header)
 
             # Get all snark work produced by this key
-            snarks = self.graphql.get_snarks_sold(address)
+            snarks = self.graphql.get_snarks_sold(address, start_date,
+                                                  end_date)
 
             for snark in snarks["snarks"]:
 
