@@ -38,7 +38,7 @@ class TaxTools():
         """Consider all values before trading started as a flat rate"""
         started_trading = parse(Config().constants()["genesis_date"])
 
-        tx_date_time = parse(tx_date)
+        tx_date_time = tx_date
         if tx_date_time < started_trading:
             net_worth = Config().constants(
             )["pre_trading_value"] * self.mina_format(amount)
