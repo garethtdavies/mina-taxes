@@ -9,43 +9,15 @@ class GraphQL():
     def __init__(self):
         """Define the GraphQL connection"""
         self.transport = AIOHTTPTransport(
-            url="https://graphql.minaexplorer.com", timeout=60)
+            url="https://graphql.minaexplorer.com")
         self.client = Client(transport=self.transport,
-                             fetch_schema_from_transport=True,
-                             execute_timeout=60)
+                             fetch_schema_from_transport=True)
 
-    def get_first_transaction_received(self, address):
-        """Determines the first transaction received by an address"""
-
-        first_transaction = gql("""
-                  query firstTransaction($account: String!) {
-                    transactions(limit: 1, sortBy: DATETIME_ASC, query: {to: $account, canonical: true}) {
-                        dateTime
-                        from
-                        to
-                        amount
-                        hash
-                        kind
-                        block {
-                            blockHeight
-                            stateHash
-                        }
-                    }
-                  }
-                  """)
-
-        params = {"account": address}
-
-        result_first_transaction = self.client.execute(first_transaction,
-                                                       variable_values=params)
-
-        return result_first_transaction
-
-    def get_transactions(self, address, start_date, end_date):
+    def get_transactions(self, address):
         """Get all transaction data for a given address."""
         transactions = gql("""
-                query allTransactions($account: String!, $start_date: DateTime!, $end_date: DateTime!) {
-                    transactions(limit: 100000, sortBy: DATETIME_ASC, query: {dateTime_gte: $start_date, dateTime_lt: $end_date, canonical: true, OR: [{to: $account}, {from: $account}]}) {
+                query allTransactions($account: String!) {
+                    transactions(limit: 100000, sortBy: DATETIME_ASC, query: {canonical: true, OR: [{to: $account}, {from: $account}]}) {
                         fee
                         from
                         to
@@ -63,11 +35,7 @@ class GraphQL():
                 }
                 """)
 
-        params = {
-            "account": address,
-            "start_date": start_date,
-            "end_date": end_date
-        }
+        params = {"account": address}
 
         result = self.client.execute(transactions, variable_values=params)
 
@@ -91,12 +59,12 @@ class GraphQL():
 
         return result_genesis
 
-    def get_blocks_produced(self, address, start_date, end_date):
+    def get_blocks_produced(self, address):
         """Determines fee transfers to an address, which would normally be the coinbase receiver"""
 
         blocks = gql("""
-                  query allBlocks($account: String!, $start_date: DateTime!, $end_date: DateTime!) {
-                    blocks(query: {dateTime_gte: $start_date, dateTime_lt: $end_date, transactions: {coinbaseReceiverAccount: {publicKey: $account}}, canonical: true}, sortBy: DATETIME_ASC, limit: 100000) {
+                  query allBlocks($account: String!) {
+                    blocks(query: {transactions: {coinbaseReceiverAccount: {publicKey: $account}}, canonical: true}, sortBy: DATETIME_ASC, limit: 100000) {
                         dateTime
                         stateHash
                         blockHeight
@@ -110,22 +78,18 @@ class GraphQL():
                   }
                   """)
 
-        params = {
-            "account": address,
-            "start_date": start_date,
-            "end_date": end_date
-        }
+        params = {"account": address}
 
         result_blocks = self.client.execute(blocks, variable_values=params)
 
         return result_blocks
 
-    def get_snarks_sold(self, address, start_date, end_date):
+    def get_snarks_sold(self, address):
         """Determines fee transfers to an address, which would normally be the coinbase receiver"""
 
         snarks = gql("""
-                  query allSnarks($account: String!, $start_date: DateTime!, $end_date: DateTime!) {
-                    snarks(limit: 100000, sortBy: DATETIME_ASC, query: {dateTime_gte: $start_date, dateTime_lt: $end_date, canonical: true, prover: $account}) {
+                  query allSnarks($account: String!) {
+                    snarks(limit: 100000, sortBy: DATETIME_ASC, query: {canonical: true, prover: $account}) {
                     dateTime
                     blockHeight
                     fee
@@ -133,11 +97,7 @@ class GraphQL():
                   }
                   """)
 
-        params = {
-            "account": address,
-            "start_date": start_date,
-            "end_date": end_date
-        }
+        params = {"account": address}
 
         result_snarks = self.client.execute(snarks, variable_values=params)
 

@@ -1,7 +1,6 @@
 import io
 import csv
 from app.graphql import GraphQL
-from app.bigquery import BigQuery
 import app.helpers as helpers
 from dateutil import parser
 
@@ -15,9 +14,8 @@ class Accointing():
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
-        self.bigquery = BigQuery()
 
-    def download_export(self, address, export_type, start_date, end_date):
+    def download_export(self, address, export_type):
 
         # Specify the headers for the Accointing import
         header = [
@@ -30,26 +28,13 @@ class Accointing():
         if export_type == "transactions":
 
             # Get all the transaction data for this account
-            transactions = self.bigquery.get_transactions(
-                address, start_date, end_date)
+            transactions = self.graphql.get_transactions(address)
 
             # Determine if the account is in the genesis ledger
             genesis_ledger = self.graphql.get_genesis_info(address)
 
             if not genesis_ledger["stake"]:
-                # The account is not in the genesis ledger but did it receive it's first transaction in the window?
-                first_tx_date = self.graphql.get_first_transaction_received(
-                    address)
-                if first_tx_date['transactions']:
-                    first_tx_date = first_tx_date['transactions'][0][
-                        'dateTime']
-                    if parser.parse(first_tx_date) <= parser.parse(start_date):
-                        burn_fee = False
-                    else:
-                        burn_fee = True
-                # This account doesn't have any transactions but for completness just return nothing
-                else:
-                    burn_fee = False
+                burn_fee = True
             else:
                 burn_fee = False
 
@@ -82,7 +67,7 @@ class Accointing():
                     label = ""
 
                 # format the date for accointing
-                format_date = tx["datetime"]
+                format_date = parser.parse(tx["dateTime"])
 
                 # Define the basic structure and we'll add specifics to it later
                 data = [
@@ -151,8 +136,7 @@ class Accointing():
             self.writer.writerow(header)
 
             # Get all blocks produced by this key
-            blocks = self.graphql.get_blocks_produced(address, start_date,
-                                                      end_date)
+            blocks = self.graphql.get_blocks_produced(address)
 
             for block in blocks["blocks"]:
 
@@ -174,8 +158,7 @@ class Accointing():
             self.writer.writerow(header)
 
             # Get all snark work produced by this key
-            snarks = self.graphql.get_snarks_sold(address, start_date,
-                                                  end_date)
+            snarks = self.graphql.get_snarks_sold(address)
 
             for snark in snarks["snarks"]:
 
