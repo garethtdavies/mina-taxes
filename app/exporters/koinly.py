@@ -1,7 +1,9 @@
 import io
 import csv
 from app.graphql import GraphQL
+from app.bigquery import BigQuery
 import app.helpers as helpers
+from dateutil.parser import parse
 
 
 class Koinly():
@@ -13,8 +15,9 @@ class Koinly():
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
+        self.bigquery = BigQuery()
 
-    def download_export(self, address, export_type):
+    def download_export(self, address, export_type, start_date, end_date):
 
         # Specify the headers for the Koinly import
         header = [
@@ -25,13 +28,26 @@ class Koinly():
         if export_type == "transactions":
 
             # Get all the transaction data for this account
-            transactions = self.graphql.get_transactions(address)
+            transactions = self.bigquery.get_transactions(
+                address, start_date, end_date)
 
             # Determine if the account is in the genesis ledger
             genesis_ledger = self.graphql.get_genesis_info(address)
 
             if not genesis_ledger["stake"]:
-                burn_fee = True
+                # The account is not in the genesis ledger but did it receive it's first transaction in the window?
+                first_tx_date = self.graphql.get_first_transaction_received(
+                    address)
+                if first_tx_date['transactions']:
+                    first_tx_date = first_tx_date['transactions'][0][
+                        'dateTime']
+                    if parse(first_tx_date) <= parse(start_date):
+                        burn_fee = False
+                    else:
+                        burn_fee = True
+                # This account doesn't have any transactions but for completness just return nothing
+                else:
+                    burn_fee = False
             else:
                 burn_fee = False
 
@@ -62,21 +78,20 @@ class Koinly():
                     label = ""
 
                 self.writer.writerow([
-                    tx["dateTime"],
+                    tx["datetime"],
                     helpers.TaxTools().mina_format(amount), "MINA", label,
                     tx["hash"],
                     helpers.TaxTools().calculate_net_worth(
-                        tx["dateTime"], amount), "USD",
+                        tx["datetime"], amount), "USD",
                     helpers.TaxTools().memo_parser(tx["memo"])
                 ])
 
                 # After the first tx we may have burnt 1 MINA if the address was not in the Genesis ledger
                 if i == 1 and burn_fee == True:
                     self.writer.writerow([
-                        transactions["transactions"][0]["dateTime"], -1,
-                        "MINA", "", transactions["transactions"][0]["hash"],
+                        tx["datetime"], -1, "MINA", "", tx["hash"],
                         helpers.TaxTools().calculate_net_worth(
-                            tx["dateTime"], 1000000000), "USD", "Ledger Fee"
+                            tx["datetime"], 1000000000), "USD", "Ledger Fee"
                     ])
 
                 i += 1
@@ -107,7 +122,8 @@ class Koinly():
             self.writer.writerow(header)
 
             # Get all blocks produced by this key
-            blocks = self.graphql.get_blocks_produced(address)
+            blocks = self.graphql.get_blocks_produced(address, start_date,
+                                                      end_date)
 
             for block in blocks["blocks"]:
 
@@ -129,7 +145,8 @@ class Koinly():
             self.writer.writerow(header)
 
             # Get all snark work produced by this key
-            snarks = self.graphql.get_snarks_sold(address)
+            snarks = self.graphql.get_snarks_sold(address, start_date,
+                                                  end_date)
 
             for snark in snarks["snarks"]:
 
