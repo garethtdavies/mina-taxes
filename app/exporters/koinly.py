@@ -120,7 +120,7 @@ class Koinly():
                     helpers.TaxTools().mina_format(amount), "MINA", "mining",
                     block["stateHash"],
                     helpers.TaxTools().calculate_net_worth(
-                        block["dateTime"], amount), "USD", block["blockHeight"]
+                        parse(block["dateTime"]), amount), "USD", block["blockHeight"]
                 ])
 
         # Export SNARK work
@@ -138,7 +138,7 @@ class Koinly():
                     helpers.TaxTools().mina_format(snark["fee"]), "MINA",
                     "mining", '',
                     helpers.TaxTools().calculate_net_worth(
-                        snark["dateTime"],
+                        parse(snark["dateTime"]),
                         snark["fee"]), "USD", snark["blockHeight"]
                 ])
 
