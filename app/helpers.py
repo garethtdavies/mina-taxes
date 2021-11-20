@@ -8,7 +8,7 @@ class Config():
     """
     def constants(self):
         return {
-            'genesis_date': '2021-06-01T00:00:00Z',
+            'genesis_date': '2021-03-17T00:00:00Z',
             'genesis_ledger_hash':
             'jx7buQVWFLsXTtzRgSxbYcT8EYLS8KCZbLrfDcJxMtyy4thw2Ee',
             'genesis_state_hash':
