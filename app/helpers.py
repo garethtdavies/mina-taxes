@@ -15,6 +15,7 @@ class Config():
             '3NKeMoncuHab5ScarV5ViyF16cJPT4taWNSaTLS64Dp67wuXigPZ',
             'pre_trading_value': 0.25,
             'pool_payout_keyword': 'Payout',
+            'trading_date': '2021-06-01T00:00:00Z',
         }
 
 
@@ -36,7 +37,7 @@ class TaxTools():
 
     def calculate_net_worth(self, tx_date, amount=None):
         """Consider all values before trading started as a flat rate"""
-        started_trading = parse(Config().constants()["genesis_date"])
+        started_trading = parse(Config().constants()["trading_date"])
 
         tx_date_time = tx_date
         if tx_date_time < started_trading:
