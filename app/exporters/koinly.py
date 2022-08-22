@@ -24,7 +24,7 @@ class Koinly():
         header = [
             "Koinly Date", "Amount", "Currency", "Label", "TxHash",
             "Net Worth Amount", "Net Worth Currency", "Description", "Type",
-            "SendingWallet", "ReceivingWallet"
+            "SendingWallet", "ReceivingWallet", "Fee"
         ]
 
         if export_type == "transactions":
@@ -65,9 +65,11 @@ class Koinly():
                 if tx["from"] == address:
                     amount = -(tx["amount"] + tx["fee"])
                     tx_type = "withdrawal"
+                    fee = tx["fee"]
                 else:  # This is a deposit transaction
                     amount = tx["amount"]
                     tx_type = "deposit"
+                    fee = ""
 
                     # Might be a delegation or memo transaction but this is not of interest if amount is 0
                     if amount == 0:
@@ -94,6 +96,7 @@ class Koinly():
                     tx_type,
                     tx["from"],
                     tx["to"],
+                    fee,
                 ])
 
                 # After the first tx we may have burnt 1 MINA if the address was not in the Genesis ledger
@@ -130,6 +133,7 @@ class Koinly():
                     "deposit",
                     "",
                     address,
+                    "",
                 ])
 
         # Handle the block production - this should be the coinbase receiver address if used
@@ -160,6 +164,7 @@ class Koinly():
                     "deposit",
                     "",
                     address,
+                    "",
                 ])
 
         # Export SNARK work
@@ -186,6 +191,7 @@ class Koinly():
                     "deposit",
                     "",
                     address,
+                    "",
                 ])
 
         return (self.si.getvalue())
