@@ -10,6 +10,7 @@ class Koinly():
     """
     Class for exporting data in Koinly format
     """
+
     def __init__(self):
         self.si = io.StringIO()
         self.writer = csv.writer(self.si)
@@ -22,7 +23,8 @@ class Koinly():
         # Specify the headers for the Koinly import
         header = [
             "Koinly Date", "Amount", "Currency", "Label", "TxHash",
-            "Net Worth Amount", "Net Worth Currency", "Description"
+            "Net Worth Amount", "Net Worth Currency", "Description", "Type",
+            "SendingWallet", "ReceivingWallet"
         ]
 
         if export_type == "transactions":
@@ -62,8 +64,10 @@ class Koinly():
                 # Is this a withdrawal - if so include the fee and the balance as negative
                 if tx["from"] == address:
                     amount = -(tx["amount"] + tx["fee"])
+                    tx_type = "withdrawal"
                 else:  # This is a deposit transaction
                     amount = tx["amount"]
+                    tx_type = "deposit"
 
                     # Might be a delegation or memo transaction but this is not of interest if amount is 0
                     if amount == 0:
@@ -79,11 +83,17 @@ class Koinly():
 
                 self.writer.writerow([
                     tx["datetime"],
-                    helpers.TaxTools().mina_format(amount), "MINA", label,
+                    helpers.TaxTools().mina_format(amount),
+                    "MINA",
+                    label,
                     tx["hash"],
                     helpers.TaxTools().calculate_net_worth(
-                        tx["datetime"], amount), "USD",
-                    helpers.TaxTools().memo_parser(tx["memo"])
+                        tx["datetime"], amount),
+                    "USD",
+                    helpers.TaxTools().memo_parser(tx["memo"]),
+                    tx_type,
+                    tx["from"],
+                    tx["to"],
                 ])
 
                 # After the first tx we may have burnt 1 MINA if the address was not in the Genesis ledger
@@ -109,11 +119,17 @@ class Koinly():
 
                 self.writer.writerow([
                     self.constants["genesis_date"],
-                    genesis_ledger["stake"]["balance"], "MINA", "other income",
+                    genesis_ledger["stake"]["balance"],
+                    "MINA",
+                    "other income",
                     self.constants["genesis_state_hash"],
                     genesis_ledger["stake"]["balance"] *
-                    self.constants["pre_trading_value"], "USD",
-                    "Genesis Token Grant"
+                    self.constants["pre_trading_value"],
+                    "USD",
+                    "Genesis Token Grant",
+                    "deposit",
+                    "",
+                    address,
                 ])
 
         # Handle the block production - this should be the coinbase receiver address if used
@@ -133,10 +149,17 @@ class Koinly():
 
                 self.writer.writerow([
                     block["dateTime"],
-                    helpers.TaxTools().mina_format(amount), "MINA", "mining",
+                    helpers.TaxTools().mina_format(amount),
+                    "MINA",
+                    "mining",
                     block["stateHash"],
                     helpers.TaxTools().calculate_net_worth(
-                        parse(block["dateTime"]), amount), "USD", block["blockHeight"]
+                        parse(block["dateTime"]), amount),
+                    "USD",
+                    block["blockHeight"],
+                    "deposit",
+                    "",
+                    address,
                 ])
 
         # Export SNARK work
@@ -152,11 +175,17 @@ class Koinly():
 
                 self.writer.writerow([
                     snark["dateTime"],
-                    helpers.TaxTools().mina_format(snark["fee"]), "MINA",
-                    "mining", '',
+                    helpers.TaxTools().mina_format(snark["fee"]),
+                    "MINA",
+                    "mining",
+                    '',
                     helpers.TaxTools().calculate_net_worth(
-                        parse(snark["dateTime"]),
-                        snark["fee"]), "USD", snark["blockHeight"]
+                        parse(snark["dateTime"]), snark["fee"]),
+                    "USD",
+                    snark["blockHeight"],
+                    "deposit",
+                    "",
+                    address,
                 ])
 
         return (self.si.getvalue())
