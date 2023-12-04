@@ -1,7 +1,6 @@
 import io
 import csv
 from app.graphql import GraphQL
-from app.bigquery import BigQuery
 import app.helpers as helpers
 from dateutil import parser
 
@@ -15,7 +14,6 @@ class Accointing():
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
-        self.bigquery = BigQuery()
 
     def download_export(self, address, export_type, start_date, end_date):
 
@@ -30,7 +28,7 @@ class Accointing():
         if export_type == "transactions":
 
             # Get all the transaction data for this account
-            transactions = self.bigquery.get_transactions(
+            transactions = self.graphql.get_transactions(
                 address, start_date, end_date)
 
             # Determine if the account is in the genesis ledger
@@ -82,7 +80,7 @@ class Accointing():
                     label = ""
 
                 # format the date for accointing
-                format_date = tx["datetime"]
+                format_date = parser.parse(tx["dateTime"])
 
                 # Define the basic structure and we'll add specifics to it later
                 data = [

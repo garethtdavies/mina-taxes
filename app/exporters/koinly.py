@@ -1,7 +1,6 @@
 import io
 import csv
 from app.graphql import GraphQL
-from app.bigquery import BigQuery
 import app.helpers as helpers
 from dateutil.parser import parse
 
@@ -16,7 +15,6 @@ class Koinly():
         self.writer = csv.writer(self.si)
         self.graphql = GraphQL()
         self.constants = helpers.Config().constants()
-        self.bigquery = BigQuery()
 
     def download_export(self, address, export_type, start_date, end_date):
 
@@ -30,7 +28,7 @@ class Koinly():
         if export_type == "transactions":
 
             # Get all the transaction data for this account
-            transactions = self.bigquery.get_transactions(
+            transactions = self.graphql.get_transactions(
                 address, start_date, end_date)
 
             # Determine if the account is in the genesis ledger
@@ -84,13 +82,13 @@ class Koinly():
                     label = ""
 
                 self.writer.writerow([
-                    tx["datetime"],
+                    tx["dateTime"],
                     helpers.TaxTools().mina_format(amount),
                     "MINA",
                     label,
                     tx["hash"],
                     helpers.TaxTools().calculate_net_worth(
-                        tx["datetime"], amount),
+                        tx["dateTime"], amount),
                     "USD",
                     helpers.TaxTools().memo_parser(tx["memo"]),
                     tx_type,
@@ -102,9 +100,9 @@ class Koinly():
                 # After the first tx we may have burnt 1 MINA if the address was not in the Genesis ledger
                 if i == 1 and burn_fee == True:
                     self.writer.writerow([
-                        tx["datetime"], -1, "MINA", "", tx["hash"],
+                        tx["dateTime"], -1, "MINA", "", tx["hash"],
                         helpers.TaxTools().calculate_net_worth(
-                            tx["datetime"], 1000000000), "USD", "Ledger Fee"
+                            tx["dateTime"], 1000000000), "USD", "Ledger Fee"
                     ])
 
                 i += 1
