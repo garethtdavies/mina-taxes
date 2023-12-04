@@ -7,4 +7,4 @@ Currently this will only generate an export of all transactions (not fee transfe
 * Add other export formats for popular software
 * Allow customization to detect the pool payout to label it correctly (currently it looks for MinaExplorer pool format which includes "Payout")
 
-![MinaExplorer tax exporting](splash.png)
+![MinaExplorer tax exporting](splash-2023.png)
