@@ -156,7 +156,7 @@ class Koinly():
                     "mining",
                     block["stateHash"],
                     helpers.TaxTools().calculate_net_worth(
-                        parse(block["dateTime"]), amount),
+                        block["dateTime"], amount),
                     "USD",
                     block["blockHeight"],
                     "deposit",
