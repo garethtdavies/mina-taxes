@@ -1,6 +1,6 @@
 import io
 import csv
-from app.graphql import GraphQL
+from app.PostgreSQL import PostgreSQL
 import app.helpers as helpers
 from dateutil.parser import parse
 
@@ -8,12 +8,13 @@ from dateutil.parser import parse
 class Koinly():
     """
     Class for exporting data in Koinly format
+    Now uses PostgreSQL instead of GraphQL/MongoDB
     """
 
     def __init__(self):
         self.si = io.StringIO()
         self.writer = csv.writer(self.si)
-        self.graphql = GraphQL()
+        self.db = PostgreSQL()
         self.constants = helpers.Config().constants()
 
     def download_export(self, address, export_type, start_date, end_date):
@@ -27,16 +28,18 @@ class Koinly():
 
         if export_type == "transactions":
 
+            # TODO Add in the zkapp account updates
+
             # Get all the transaction data for this account
-            transactions = self.graphql.get_transactions(
+            transactions = self.db.get_transactions(
                 address, start_date, end_date)
 
             # Determine if the account is in the genesis ledger
-            genesis_ledger = self.graphql.get_genesis_info(address)
+            genesis_ledger = self.db.get_genesis_info(address)
 
             if not genesis_ledger["stake"]:
                 # The account is not in the genesis ledger but did it receive it's first transaction in the window?
-                first_tx_date = self.graphql.get_first_transaction_received(
+                first_tx_date = self.db.get_first_transaction_received(
                     address)
                 if first_tx_date['transactions']:
                     first_tx_date = first_tx_date['transactions'][0][
@@ -113,7 +116,7 @@ class Koinly():
             self.writer.writerow(header)
 
             # Did this account have any balances in the Genesis ledger?
-            genesis_ledger = self.graphql.get_genesis_info(address)
+            genesis_ledger = self.db.get_genesis_info(address)
 
             # We can hard code in the date of the Genesis ledger and the value of the tokens at that date
             if genesis_ledger["stake"]:
@@ -140,14 +143,17 @@ class Koinly():
             self.writer.writerow(header)
 
             # Get all blocks produced by this key
-            blocks = self.graphql.get_blocks_produced(address, start_date,
+            blocks = self.db.get_blocks_produced(address, start_date,
                                                       end_date)
 
             for block in blocks["blocks"]:
 
                 # Include any tx fees and deduct any snark fees
-                amount = int(block["transactions"]["coinbase"]) + int(
-                    block["txFees"]) - int(block["snarkFees"])
+                amount = (
+                    int(block["transactions"]["coinbase"]) 
+                    + int(block["txFees"]) 
+                    - int(block.get("feeTransferForCoinbase", "0"))
+                )
 
                 self.writer.writerow([
                     block["dateTime"],
@@ -171,7 +177,7 @@ class Koinly():
             self.writer.writerow(header)
 
             # Get all snark work produced by this key
-            snarks = self.graphql.get_snarks_sold(address, start_date,
+            snarks = self.db.get_snarks_sold(address, start_date,
                                                   end_date)
 
             for snark in snarks["snarks"]:
@@ -193,3 +199,8 @@ class Koinly():
                 ])
 
         return (self.si.getvalue())
+
+    def __del__(self):
+        """Clean up database connection on destruction"""
+        if hasattr(self, 'db'):
+            self.db.close()
