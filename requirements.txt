@@ -10,3 +10,4 @@ gql
 aiohttp
 pytz
 python-dotenv
+gunicorn
