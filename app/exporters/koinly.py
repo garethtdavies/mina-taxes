@@ -171,6 +171,42 @@ class Koinly():
                     "",
                 ])
 
+        # Export zkApp transactions
+        elif export_type == "zkapps":
+
+            self.writer.writerow(header)
+
+            # Get all zkApp transactions for this address
+            zkapps = self.db.get_zkapp_transactions(address, start_date, end_date)
+
+            for tx in zkapps["zkappTransactions"]:
+                
+                # Skip zero amounts (shouldn't happen but just in case)
+                if tx["amount"] == 0:
+                    continue
+                
+                # Label failed transactions
+                label = "failed" if tx.get("failed") else ""
+                
+                # Fee is only shown for withdrawals
+                fee = tx["fee"] if tx["type"] == "withdrawal" else ""
+
+                self.writer.writerow([
+                    tx["dateTime"],
+                    helpers.TaxTools().mina_format(tx["amount"]),
+                    "MINA",
+                    label,
+                    tx["hash"],
+                    helpers.TaxTools().calculate_net_worth(
+                        tx["dateTime"], tx["amount"]),
+                    "USD",
+                    helpers.TaxTools().memo_parser(tx["memo"]),
+                    tx["type"],
+                    tx["from"],
+                    tx["to"],
+                    helpers.TaxTools().mina_format(fee) if fee else "",
+                ])
+
         # Export SNARK work
         elif export_type == "snarks":
 
@@ -188,8 +224,7 @@ class Koinly():
                     "MINA",
                     "mining",
                     '',
-                    helpers.TaxTools().calculate_net_worth(
-                        parse(snark["dateTime"]), snark["fee"]),
+                    helpers.TaxTools().calculate_net_worth(snark["dateTime"], snark["fee"]),
                     "USD",
                     snark["blockHeight"],
                     "deposit",

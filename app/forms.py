@@ -20,6 +20,7 @@ class TaxForm(FlaskForm):
         choices=
         [('', 'Choose...'),
          ('transactions', 'Transactions (includes staking pool payouts)'),
+         ('zkapps', 'zkApp Transactions (inc. pool payouts sent by zkApp tx)'),
          ('production',
           'Block Production (only if running a block producer - use coinbase receiver)'
           ), ('snarks', 'SNARK Work'), ('genesis', 'Genesis Grants')],

@@ -123,7 +123,6 @@ class PostgreSQL:
                 AND date_time < :end_date
                 AND ("to" = :address OR "from" = :address)
             ORDER BY date_time ASC
-            LIMIT 100000
         """)
         
         results = self.session.execute(query, {
@@ -151,6 +150,151 @@ class PostgreSQL:
             })
         
         return {"transactions": transactions}
+    
+    def get_zkapp_transactions(self, address, start_date, end_date):
+        """
+        Get zkApp transactions involving an address
+        
+        Returns transactions where address is:
+        - The fee payer (always includes fee, even on failed transactions)
+        - In an account update with MINA balance change (successful only)
+        """
+        MINA_TOKEN = "wSHV2S4qX9jFsLjQo8r1BsMLH2ZRKsZx6EJd1sbozGPieEC4Jf"
+        
+        query = text("""
+            SELECT 
+                z.hash,
+                z.date_time as "dateTime",
+                z.block_height as "blockHeight",
+                z.block_state_hash as "stateHash",
+                z.zkapp_command as "zkappCommand"
+            FROM zkapps z
+            WHERE z.canonical = true
+                AND z.date_time >= :start_date
+                AND z.date_time < :end_date
+                AND (
+                    z.zkapp_command->'feePayer'->'body'->>'publicKey' = :address
+                    OR EXISTS (
+                        SELECT 1 FROM jsonb_array_elements(z.zkapp_command->'accountUpdates') AS au
+                        WHERE au->'body'->>'publicKey' = :address
+                        AND au->'body'->>'tokenId' = :mina_token
+                    )
+                )
+            ORDER BY z.date_time ASC
+        """)
+        
+        results = self.session.execute(query, {
+            "address": address,
+            "start_date": start_date,
+            "end_date": end_date,
+            "mina_token": MINA_TOKEN
+        }).fetchall()
+        
+        transactions = []
+        
+        for row in results:
+            zkapp_cmd = row.zkappCommand or {}
+            fee_payer_body = zkapp_cmd.get("feePayer", {}).get("body", {})
+            fee_payer_pk = fee_payer_body.get("publicKey")
+            fee = int(fee_payer_body.get("fee", 0))
+            memo = zkapp_cmd.get("memo", "")
+            
+            # Check if transaction failed
+            failure_reason = zkapp_cmd.get("failureReason")
+            is_failed = failure_reason is not None and failure_reason != ""
+            
+            is_fee_payer = fee_payer_pk == address
+            
+            if is_fee_payer:
+                # Sum all MINA balance changes for fee payer in account updates
+                total_balance_change = 0
+                
+                if not is_failed:
+                    for au in zkapp_cmd.get("accountUpdates", []):
+                        body = au.get("body", {})
+                        if body.get("publicKey") == address and body.get("tokenId") == MINA_TOKEN:
+                            bc = body.get("balanceChange", {})
+                            magnitude = int(bc.get("magnitude", 0))
+                            sgn = bc.get("sgn", "Positive")
+                            if sgn == "Negative":
+                                total_balance_change -= magnitude
+                            else:
+                                total_balance_change += magnitude
+                
+                # Withdrawal: amount includes fee (matches regular tx behavior)
+                # amount = -(outgoing_balance + fee)
+                if total_balance_change <= 0:
+                    amount = total_balance_change - fee  # e.g., -1000000000 - 100000000
+                    transactions.append({
+                        "dateTime": row.dateTime.isoformat() + "Z" if row.dateTime else None,
+                        "hash": row.hash,
+                        "blockHeight": row.blockHeight,
+                        "stateHash": row.stateHash,
+                        "amount": amount,
+                        "fee": fee,
+                        "from": address,
+                        "to": "",
+                        "memo": memo,
+                        "type": "withdrawal",
+                        "failed": is_failed
+                    })
+                else:
+                    # Rare: fee payer receives MINA, net it against fee
+                    net_amount = total_balance_change - fee
+                    transactions.append({
+                        "dateTime": row.dateTime.isoformat() + "Z" if row.dateTime else None,
+                        "hash": row.hash,
+                        "blockHeight": row.blockHeight,
+                        "stateHash": row.stateHash,
+                        "amount": net_amount,
+                        "fee": fee,
+                        "from": "" if net_amount > 0 else address,
+                        "to": address if net_amount > 0 else "",
+                        "memo": memo,
+                        "type": "deposit" if net_amount > 0 else "withdrawal",
+                        "failed": is_failed
+                    })
+            
+            # Non-fee-payer with MINA balance changes (only if successful)
+            elif not is_failed:
+                for au in zkapp_cmd.get("accountUpdates", []):
+                    body = au.get("body", {})
+                    if body.get("publicKey") == address and body.get("tokenId") == MINA_TOKEN:
+                        bc = body.get("balanceChange", {})
+                        magnitude = int(bc.get("magnitude", 0))
+                        sgn = bc.get("sgn", "Positive")
+                        
+                        if magnitude > 0:
+                            if sgn == "Positive":
+                                transactions.append({
+                                    "dateTime": row.dateTime.isoformat() + "Z" if row.dateTime else None,
+                                    "hash": row.hash,
+                                    "blockHeight": row.blockHeight,
+                                    "stateHash": row.stateHash,
+                                    "amount": magnitude,
+                                    "fee": 0,
+                                    "from": fee_payer_pk or "",
+                                    "to": address,
+                                    "memo": memo,
+                                    "type": "deposit",
+                                    "failed": False
+                                })
+                            else:
+                                transactions.append({
+                                    "dateTime": row.dateTime.isoformat() + "Z" if row.dateTime else None,
+                                    "hash": row.hash,
+                                    "blockHeight": row.blockHeight,
+                                    "stateHash": row.stateHash,
+                                    "amount": -magnitude,
+                                    "fee": 0,
+                                    "from": address,
+                                    "to": "",
+                                    "memo": memo,
+                                    "type": "withdrawal",
+                                    "failed": False
+                                })
+        
+        return {"zkappTransactions": transactions}
 
     def get_genesis_info(self, address):
         """
@@ -299,7 +443,6 @@ class PostgreSQL:
                 AND date_time >= :start_date
                 AND date_time < :end_date
             ORDER BY date_time ASC
-            LIMIT 100000
         """)
         
         results = self.session.execute(query, {
@@ -311,7 +454,7 @@ class PostgreSQL:
         snarks = []
         for row in results:
             snarks.append({
-                "dateTime": row.dateTime.isoformat() if row.dateTime else None,
+                "dateTime": row.dateTime.isoformat() + "Z" if row.dateTime else None,
                 "blockHeight": row.blockHeight,
                 "fee": row.fee or 0
             })
