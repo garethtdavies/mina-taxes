@@ -13,7 +13,7 @@ def index():
 
     if form.validate_on_submit():
         address = form.address.data
-        export = form.export.data
+        export = "form.export.data"
         export_type = form.export_type.data
         start_date = datetime(form.start_date.data.year,
                               form.start_date.data.month,
@@ -27,10 +27,9 @@ def index():
         start_date = start_date.replace().isoformat()
         end_date = end_date.replace().isoformat()
 
-        if export == "accointing":
-            exporter = Accointing()
-        else:
-            exporter = Koinly()
+        # Always use the Koinly exporter
+        exporter = Koinly()
+
         output = make_response(
             exporter.download_export(address, export_type, start_date,
                                      end_date))
