@@ -3,110 +3,158 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description"
-    content="Tool to generate compatible files to import MINA transactions to popular tax software.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="description" content="Tool to generate compatible files to import MINA transactions to popular tax software.">
   <title>MinaExplorer Exporter Tool</title>
 
-  <!-- Bootstrap core CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <!-- Tabler CSS -->
+  <link href="/static/tabler_minimal/css/tabler.min.css" rel="stylesheet">
+  <link href="/static/tabler_minimal/css/tabler-vendors.min.css" rel="stylesheet">
 
-  <!-- Custom styles for this template -->
-  <link href="/static/assets/css/form-validation.css" rel="stylesheet">
+  <style>
+    @import url('https://rsms.me/inter/inter.css');
+    :root {
+      --tblr-font-sans-serif: 'Inter Var', -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif;
+    }
+    body {
+      font-feature-settings: "cv03", "cv04", "cv11";
+    }
+  </style>
 </head>
 
-<body class="bg-light">
-
-  <div class="container">
-    <main>
-      <div class="py-5 text-center">
-        <h2>MinaExplorer Exporter Tool</h2>
-        <p class="lead">Use the form below to export a CSV that you can import for your tax software for any address.
-          Missing your favourite tax software? - request it <a href="https://feedback.minaexplorer.com/">here</a>. This
-          is not tax advice. Consult a tax professional to review the generated output and modify it to fit your
-          reporting requirements.
-        </p>
-      </div>
-
-      <div class="alert alert-warning" role="alert">
-        This tool is in active development. Use it at your own risk.
-      </div>
-
-      <div class="row">
-        <div class="col-md-12 col-lg-12">
-          <form class="needs-validation" novalidate action="/" method="POST">
-            {{ form.hidden_tag() }}
-            <div class="row g-3">
-              <div class="col-12">
-                <label for="address" class="form-label">MINA Address</label>
-                {{ form.address(type="text", class="form-control", id="address", placeholder="B62...") }}
-                <div class="invalid-feedback">
-                  Please enter your MINA public key.
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="export" class="form-label">Export Format</label>
-                {{ form.export(class="form-select", id="export") }}
-                <div class="invalid-feedback">
-                  Please select a valid export format.
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="export_type" class="form-label">Export Type</label>
-                {{ form.export_type(class="form-select", id="export_type") }}
-                <div class="invalid-feedback">
-                  Please select a valid export type.
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="start_date" class="form-label">Start Date</label>
-                {{ form.start_date(class='datepicker form-control', id="start_date") }}
-                <div class="invalid-feedback">
-                  Please choose a valid start date.
-                </div>
-              </div>
-
-              <div class="col-12">
-                <label for="start_date" class="form-label">End Date</label>
-                {{ form.end_date(class="form-control datepicker", id="end_date") }}
-                <div class="invalid-feedback">
-                  Please choose a valid end date.
-                </div>
-              </div>
-
-              <hr class="my-4">
-
-              {{ form.submit(class="w-100 btn btn-primary btn-lg", type="submit") }}
-          </form>
+<body>
+  <div class="page">
+    <!-- Header -->
+    <header class="navbar navbar-expand-md d-print-none border-0">
+      <div class="container-xl">
+        <div class="row align-items-center w-100">
+          <div class="col text-center">
+            <h1 class="mb-0">MinaExplorer Tax Export Tool</h1>
+          </div>
+          <div class="col-auto position-absolute end-0 me-3">
+            <a href="https://github.com/garethtdavies/mina-taxes" class="btn btn-sm" target="_blank" rel="noopener">
+              <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="16" height="16" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5"/>
+              </svg>
+              Source code
+            </a>
+          </div>
         </div>
       </div>
-    </main>
+    </header>
 
-    <footer class="my-5 pt-5 text-muted text-center text-small">
-      <p class="mb-1">View source and contribute <a href="https://github.com/garethtdavies/mina-taxes">here</a>.</p>
-      <ul class="list-inline">
-        <li class="list-inline-item"><a href="https://docs.minaexplorer.com/minaexplorer/privacy-policy">Privacy</a>
-        </li>
-        <li class="list-inline-item"><a
-            href="https://docs.minaexplorer.com/minaexplorer/website-terms-of-service">Terms</a></li>
-        <li class="list-inline-item"><a
-            href="https://docs.minaexplorer.com/minaexplorer/graphql-getting-started">GraphQL API</a></li>
-        <li class="list-inline-item"><a href="https://docs.minaexplorer.com/minaexplorer/get-help">Support</a></li>
-      </ul>
-    </footer>
+    <!-- Page content -->
+    <div class="page-wrapper">
+      <div class="page-body py-4">
+        <div class="container-xl">
+          <div class="row row-cards">
+            <div class="col-lg-8 offset-lg-2">
+              <div class="card">
+                <div class="card-body">
+                  <h2 class="card-title mb-2">
+                    Export Transactions
+                  </h2>
+                  <p class="text-muted mb-4">
+                    Generate CSV files compatible with popular tax software for any MINA address.
+                    Missing your favourite tax software? Request it
+                    <a href="https://feedback.minaexplorer.com/" target="_blank" rel="noopener">here</a>.
+                  </p>
+
+                  <div class="alert alert-warning alert-dismissible" role="alert">
+                    <div class="d-flex">
+                      <div>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                          <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                          <path d="M12 9v4"></path>
+                          <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"></path>
+                          <path d="M12 16h.01"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 class="alert-title">Important Notice</h4>
+                        <div class="text-muted">This tool is in active development. Use it at your own risk. This is not tax advice - consult a tax professional to review the generated output.</div>
+                      </div>
+                    </div>
+                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                  </div>
+
+                  <form action="/" method="POST" novalidate>
+                    {{ form.hidden_tag() }}
+
+                    <div class="mb-3">
+                      <label class="form-label required">MINA Address</label>
+                      {{ form.address(class="form-control", placeholder="B62...") }}
+                      <small class="form-hint">Enter your MINA public key</small>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label required">Export Format</label>
+                      {{ form.export(class="form-select") }}
+                      <small class="form-hint">Choose your tax software</small>
+                    </div>
+
+                    <div class="mb-3">
+                      <label class="form-label required">Export Type</label>
+                      {{ form.export_type(class="form-select") }}
+                      <small class="form-hint">Select the type of transactions to export</small>
+                    </div>
+
+                    <div class="row">
+                      <div class="col-lg-6">
+                        <div class="mb-3">
+                          <label class="form-label required">Start Date</label>
+                          {{ form.start_date(class="form-control") }}
+                        </div>
+                      </div>
+                      <div class="col-lg-6">
+                        <div class="mb-3">
+                          <label class="form-label required">End Date</label>
+                          {{ form.end_date(class="form-control") }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-footer">
+                      {{ form.submit(class="btn btn-primary w-100") }}
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="footer footer-transparent d-print-none mt-4">
+        <div class="container-xl">
+          <div class="row text-center align-items-center">
+            <div class="col-12">
+              <ul class="list-inline list-inline-dots mb-0">
+                <li class="list-inline-item">
+                  <a href="https://docs.minaexplorer.com/minaexplorer/privacy-policy" class="link-secondary" target="_blank" rel="noopener">Privacy</a>
+                </li>
+                <li class="list-inline-item">
+                  <a href="https://docs.minaexplorer.com/minaexplorer/website-terms-of-service" class="link-secondary" target="_blank" rel="noopener">Terms</a>
+                </li>
+                <li class="list-inline-item">
+                  <a href="https://docs.minaexplorer.com/minaexplorer/staking-pool" class="link-secondary" target="_blank" rel="noopener">Staking Pool</a>
+                </li>
+                <li class="list-inline-item">
+                  <a href="https://docs.minaexplorer.com/minaexplorer/get-help" class="link-secondary" target="_blank" rel="noopener">Support</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
   </div>
 
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
-  </script>
-
-  <script src="/static/assets/js/form-validation.js"></script>
-
+  <!-- Tabler Core -->
+  <script src="/static/tabler_minimal/js/tabler.min.js"></script>
 </body>
 
 </html>
